@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MPT SuperBot — Dashboard</title>
+  <meta name="description" content="MPT SuperBot: Giám sát Routing, Nospam, Meeting Note AI" />
+  <link rel="stylesheet" href="/static/shared.css">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-title">
+      <h1><svg class="brand-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> MPT SuperBot</h1>
+      <div class="header-sub">Routing Monitor · Tra cứu SĐT + Nospam · Meeting Note AI</div>
+    </div>
+    <div class="header-actions">
+      <span id="globalDot" class="dot dot-idle"></span>
+      <span id="globalStatusText" class="filter-label" aria-live="polite">Đang khởi tạo...</span>
+      <button id="btnTheme" class="ghost" title="Đổi giao diện sáng/tối" aria-label="Đổi giao diện sáng/tối">☾</button>
+      <span id="appVersion" class="version-label">v1.4</span>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="app-body">
+    <div class="tabs" id="tabBar" role="tablist">
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="tab-mpt-config"><svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> MPT Config</button>
+      <button class="tab-btn active" role="tab" aria-selected="true" data-tab="tab-dashboard"><svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" y1="20" x2="6" y2="14"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg> Dashboard</button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="tab-billing"><svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> Billing</button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="tab-find"><svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Tra cứu SĐT</button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="tab-bots"><svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg> Bot MPT</button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="tab-meeting"><svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg> Cuộc họp</button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="tab-log"><svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg> Log</button>
+    </div>
+
+    <!-- ===== TAB: MPT CONFIG ===== -->
+    <div id="tab-mpt-config" class="tab-content">
+      <div class="summary-cards" id="summaryCards">
+        <div class="summary-card">
+          <div class="summary-card-label">Targets đang bật</div>
+          <div class="summary-card-value" id="sumTargetsOn">—</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-card-label">Cảnh báo hôm nay</div>
+          <div class="summary-card-value" id="sumAlerts">—</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-card-label">Trạng thái quét</div>
+          <div class="summary-card-value" id="sumStatus">—</div>
+        </div>
+      </div>
+
+      <fieldset>
+        <legend>Target</legend>
+        <div class="target-select-row">
+          <label for="targetSelect" style="display:none;">Chọn target</label>
+          <select id="targetSelect"></select>
+          <button id="btnAddTarget">＋ Thêm</button>
+          <button id="btnDeleteTarget" class="danger">✕ Xóa</button>
+        </div>
+        <div class="row mt-md">
+          <div class="col-2">
+            <label for="targetLabel">Tên hiển thị</label>
+            <input type="text" id="targetLabel" placeholder="VD: PS3 - MPT Routing" />
+          </div>
+          <div class="col">
+            <label for="alertName">Tên cảnh báo (ngắn)</label>
+            <input type="text" id="alertName" placeholder="VD: PS3" />
+          </div>
+          <div class="col flex-align-end" style="padding-bottom:6px;">
+            <label class="toggle">
+              <input type="checkbox" id="targetEnabled" />
+              <span class="slider"></span>
+              <span class="toggle-label">Bật Target</span>
+            </label>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Đăng nhập &amp; Monitor URL</legend>
+        <div class="row">
+          <div class="col-2">
+            <label for="loginUrl">Login URL</label>
+            <input type="text" id="loginUrl" placeholder="https://customer-billing.mpt.com.vn/user" />
+          </div>
+          <div class="col-2">
+            <label for="monitoringUrl">Monitor URL</label>
+            <input type="text" id="monitoringUrl" placeholder="https://customer-billing.mpt.com.vn/routing/monitoring" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <label for="mptUsername">Username</label>
+            <input type="text" id="mptUsername" />
+          </div>
+          <div class="col">
+            <label for="mptPassword">Password</label>
+            <input type="password" id="mptPassword" />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Ngưỡng cảnh báo &amp; Chu kỳ</legend>
+        <div class="row">
+          <div class="col">
+            <label for="threshold">Chung (≤)</label>
+            <input type="number" id="threshold" value="0" />
+          </div>
+          <div class="col">
+            <label for="thresholdViettel">Viettel</label>
+            <input type="number" id="thresholdViettel" placeholder="mặc định" />
+          </div>
+          <div class="col">
+            <label for="thresholdMobi">Mobi</label>
+            <input type="number" id="thresholdMobi" placeholder="mặc định" />
+          </div>
+          <div class="col">
+            <label for="thresholdVina">Vina</label>
+            <input type="number" id="thresholdVina" placeholder="mặc định" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <label for="intervalValue">Chu kỳ quét</label>
+            <div class="hstack-xs">
+              <input type="number" id="intervalValue" min="1" value="5" style="width:70px;" />
+              <select id="intervalUnit">
+                <option value="minute">phút</option>
+                <option value="hour">giờ</option>
+              </select>
+            </div>
+          </div>
+          <div class="col">
+            <label for="workStartHour">Giờ bắt đầu</label>
+            <input type="number" id="workStartHour" min="0" max="23" value="7" />
+          </div>
+          <div class="col">
+            <label for="workEndHour">Giờ kết thúc</label>
+            <input type="number" id="workEndHour" min="1" max="24" value="21" />
+          </div>
+          <div class="col flex-align-end" style="padding-bottom:6px;">
+            <label class="toggle">
+              <input type="checkbox" id="onlyOnChange" checked />
+              <span class="slider"></span>
+              <span class="toggle-label">Chỉ báo biến động</span>
+            </label>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Cài đặt toàn cục</legend>
+        <div class="row">
+          <div class="col-2">
+            <label for="dropThreshold">Cảnh báo sụt giảm đột ngột (%)</label>
+            <input type="number" id="dropThreshold" value="70" />
+          </div>
+          <div class="col-2">
+            <label for="reportHour">Giờ gửi báo cáo ngày</label>
+            <input type="number" id="reportHour" min="0" max="23" value="20" />
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="controls">
+        <div class="hstack">
+          <button id="btnSaveConfig" class="primary">💾 Lưu cấu hình</button>
+          <span id="dirtyBadge" class="dirty-badge" hidden>● Chưa lưu</span>
+        </div>
+        <div class="hstack">
+          <button id="btnResume">▶ Resume</button>
+          <button id="btnPause">⏸ Pause</button>
+          <span id="scanStatus" class="muted"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: DASHBOARD ===== -->
+    <div id="tab-dashboard" class="tab-content active">
+      <div class="hstack mb-sm">
+        <select id="dashTargetSelect" class="control-sm flex-1">
+          <option value="">-- Tất cả target --</option>
+        </select>
+        <input type="text" id="routingFilter" class="control-sm flex-1" placeholder="Lọc routing...">
+        <button id="btnRefreshDash" class="ghost control-sm">↻ Làm mới</button>
+      </div>
+
+      <!-- BIỂU ĐỒ -->
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-card-head">
+            <span>Cảnh báo theo ngày</span>
+            <select id="alertRangeSel" class="control-sm">
+              <option value="7">7 ngày</option>
+              <option value="14" selected>14 ngày</option>
+              <option value="30">30 ngày</option>
+            </select>
+          </div>
+          <div id="chartAlerts" class="chart-body muted small">Đang tải...</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-head">
+            <span>Xu hướng sản lượng (phút) · 15 ngày</span>
+            <span class="hstack-xs" style="flex-wrap:wrap;">
+              <select id="trendScope" class="control-sm">
+                <option value="account" selected>Theo account (top 5)</option>
+                <option value="ps">Theo PS</option>
+              </select>
+              <button id="btnBackfill" class="ghost control-sm">Backfill 15 ngày</button>
+              <button id="btnCacheToday" class="ghost control-sm">Cache hôm nay</button>
+              <span id="trendStatus" class="muted small"></span>
+            </span>
+          </div>
+          <div id="chartBillingTrend" class="chart-body muted small">Đang tải...</div>
+        </div>
+        <div class="chart-card chart-card-wide">
+          <div class="chart-card-head">
+            <span>Sản lượng billing theo account</span>
+            <span class="hstack-xs">
+              <input type="date" id="billChartDate" class="control-sm" style="width:140px;" />
+              <button id="btnLoadBillChart" class="ghost control-sm">▶ Tải biểu đồ</button>
+              <span id="billChartLoading" class="muted small" style="display:none;">Đang tải...</span>
+            </span>
+          </div>
+          <div id="chartBillingAccounts" class="chart-body muted small">Chọn ngày &amp; bấm "Tải biểu đồ" (lấy dữ liệu trực tiếp từ portal — có thể chậm).</div>
+        </div>
+      </div>
+
+      <div id="dashboardContent">Đang tải...</div>
+    </div>
+
+    <!-- ===== TAB: BILLING ===== -->
+     <div id="tab-billing" class="tab-content">
+       <!-- Báo cáo billing -->
+       <div class="hstack mb-sm" style="flex-wrap:wrap;">
+         <span class="filter-label">NGÀY:</span>
+         <select id="billingDateMode" class="control-sm" style="width:130px;">
+           <option value="today">Hôm nay</option>
+           <option value="yesterday">Hôm qua</option>
+           <option value="custom">Tùy chọn...</option>
+         </select>
+         <input type="date" id="billingCustomDate" class="control-sm" style="display:none; width:140px;" />
+         <select id="billingTargetSelect" class="control-sm" style="width:140px;">
+           <option value="all">Tất cả target</option>
+         </select>
+         <button id="btnGetBilling" class="primary control-sm">▶ Lấy báo cáo</button>
+         <span id="billingLoading" class="muted" style="display:none;">Đang tải...</span>
+       </div>
+       <div id="billing-result">
+         <div class="billing-empty">Chọn ngày và bấm "Lấy báo cáo" để xem kết quả.</div>
+       </div>
+
+       <!-- ===== QUẢN LÝ CƯỚC ===== -->
+       <hr style="margin:20px 0; border-color:var(--border);">
+       <div class="hstack mb-sm" style="justify-content:space-between; flex-wrap:wrap;">
+         <h3 style="margin:0; font-size:1rem; color:var(--accent);">💰 Quản lý Cước theo Nhóm</h3>
+         <button class="primary control-sm" onclick="bmOpenCreate()">+ Tạo nhóm mới</button>
+       </div>
+       <div id="bm-group-list" style="display:grid; gap:12px;">
+         <div class="muted" style="text-align:center;padding:20px;">Đang tải...</div>
+       </div>
+     </div>
+
+     <!-- MODAL TẠO/SỬA NHÓM -->
+     <div id="bmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;">
+       <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;width:min(560px,95vw);max-height:90vh;overflow-y:auto;">
+         <div class="hstack mb-sm" style="justify-content:space-between;">
+           <h3 id="bmModalTitle" style="margin:0;font-size:1rem;">Tạo nhóm mới</h3>
+           <button onclick="bmCloseModal()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-muted);">✕</button>
+         </div>
+         <input type="hidden" id="bmGroupId" value="">
+         <div style="display:grid;gap:12px;">
+           <div><label style="font-weight:bold;font-size:0.85rem;color:var(--text);margin-bottom:4px;display:block;">Tên nhóm *</label>
+             <input type="text" id="bmName" class="control-sm" style="width:100%;" placeholder="VD: ONK12 Tổng"></div>
+           <div class="hstack" style="gap:10px;">
+             <div style="flex:1;"><label style="font-weight:bold;font-size:0.85rem;color:var(--text);margin-bottom:4px;display:block;">Target *</label>
+               <select id="bmTarget" class="control-sm" style="width:100%;" onchange="bmLoadClusters()">
+                 <option value="ps3">PS3</option><option value="ps4">PS4</option><option value="ps50">PS50</option>
+               </select></div>
+             <div style="flex:1;"><label style="font-weight:bold;font-size:0.85rem;color:var(--text);margin-bottom:4px;display:block;">Giá (VNĐ/phút) *</label>
+               <input type="number" id="bmPrice" class="control-sm" style="width:100%;" placeholder="950" min="0" step="1"></div>
+           </div>
+           <div class="hstack" style="gap:10px;">
+             <div style="flex:1;"><label style="font-weight:bold;font-size:0.85rem;color:var(--text);margin-bottom:4px;display:block;">Block factor</label>
+               <input type="number" id="bmBlockFactor" class="control-sm" style="width:100%;" value="1.02" step="0.01" min="1"></div>
+             <div style="flex:1;"><label style="font-weight:bold;font-size:0.85rem;color:var(--text);margin-bottom:4px;display:block;">Cảnh báo gần hết (VNĐ)</label>
+               <input type="number" id="bmWarnLow" class="control-sm" style="width:100%;" placeholder="500000" min="0"></div>
+           </div>
+           <div><label style="font-weight:bold;font-size:0.85rem;color:var(--text);margin-bottom:4px;display:block;">Cảnh báo âm ngưỡng (VNĐ âm, VD: -1000000)</label>
+             <input type="number" id="bmWarnNeg" class="control-sm" style="width:100%;" placeholder="-1000000" max="0"></div>
+           <div><label style="font-weight:bold;font-size:0.85rem;color:var(--text);margin-bottom:4px;display:block;">Ghi chú</label>
+             <input type="text" id="bmNotes" class="control-sm" style="width:100%;"></div>
+           <div><label style="font-weight:bold;font-size:0.85rem;color:var(--text);margin-bottom:4px;display:block;">Chọn Cluster (nhiều)</label>
+             <div id="bmClusterList" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;max-height:180px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:8px;">
+               <span class="muted">Chọn target trước...</span>
+             </div></div>
+         </div>
+         <div class="hstack" style="justify-content:flex-end;gap:8px;margin-top:16px;">
+           <button onclick="bmCloseModal()" class="control-sm">Hủy</button>
+           <button onclick="bmSaveGroup()" class="primary control-sm">💾 Lưu</button>
+         </div>
+       </div>
+     </div>
+
+     <!-- MODAL NẠP TIỀN -->
+     <div id="bmTopupModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;">
+       <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;width:min(360px,95vw);">
+         <div class="hstack mb-sm" style="justify-content:space-between;">
+           <h3 id="bmTopupTitle" style="margin:0;font-size:1rem;">Nạp tiền</h3>
+           <button onclick="bmCloseTopup()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-muted);">✕</button>
+         </div>
+         <input type="hidden" id="bmTopupGroupId" value="">
+         <div style="display:grid;gap:12px;">
+           <div><label style="font-weight:bold;font-size:0.85rem;color:var(--text);margin-bottom:4px;display:block;">Số tiền nạp (VNĐ) *</label>
+             <input type="number" id="bmTopupAmount" class="control-sm" style="width:100%;" placeholder="5000000" min="1"></div>
+           <div><label style="font-weight:bold;font-size:0.85rem;color:var(--text);margin-bottom:4px;display:block;">Ghi chú</label>
+             <input type="text" id="bmTopupNote" class="control-sm" style="width:100%;" placeholder="Nạp tháng 7"></div>
+         </div>
+         <div class="hstack" style="justify-content:flex-end;gap:8px;margin-top:16px;">
+           <button onclick="bmCloseTopup()" class="control-sm">Hủy</button>
+           <button onclick="bmDoTopup()" class="primary control-sm">💳 Xác nhận nạp</button>
+         </div>
+       </div>
+     </div>
+
+    <!-- ===== TAB: TRA CỨU SĐT + NOSPAM (HỢP NHẤT) ===== -->
+    <div id="tab-find" class="tab-content">
+
+      <!-- Cấu hình Bot Nospam -->
+      <fieldset>
+        <legend>🤖 Bot Telegram — Nospam (tự động trả kết quả spam qua Telegram)</legend>
+        <div class="row">
+          <div class="col-2">
+            <label for="nospamToken">Bot Token</label>
+            <div class="secret-wrap">
+              <input type="password" id="nospamToken" placeholder="1234567890:AAE..." />
+              <button type="button" class="btn-reveal" data-reveal="nospamToken" aria-label="Hiện/ẩn token">👁</button>
+            </div>
+          </div>
+          <div class="col-2">
+            <label for="nospamChatId">Chat ID (tùy chọn)</label>
+            <input type="text" id="nospamChatId" placeholder="-100123456789" />
+          </div>
+          <div class="col flex-align-end">
+            <div class="hstack-xs">
+              <button id="btnTestNospamBot" class="ghost control-sm">Test kết nối</button>
+              <span id="nospamTestStatus" class="test-status"></span>
+            </div>
+          </div>
+        </div>
+        <div class="hstack mt-sm">
+          <button id="btnSaveNospam" class="primary">💾 Lưu</button>
+          <button id="btnStartNospamBot">▶ Khởi động Bot</button>
+          <button id="btnStopNospamBot" class="danger">⏹ Dừng Bot</button>
+          <span id="nospamBotStatus" class="bot-status stopped"><span class="dot"></span> Chưa chạy</span>
+        </div>
+      </fieldset>
+
+      <!-- Input tra cứu -->
+      <fieldset>
+        <legend>🔍 Tra cứu số điện thoại (Portal MPT + Kiểm tra Spam đồng thời)</legend>
+        <div class="small mb-sm" style="color:var(--text-muted);">
+          Nhập số để tra cứu đồng thời: <strong>lịch sử cuộc gọi MPT</strong> và <strong>kiểm tra spam tại nospam.vncert.vn</strong>
+        </div>
+        <div class="row">
+          <div class="col-2">
+            <label for="findPhone">Số điện thoại</label>
+            <input type="text" id="findPhone" placeholder="0916705392 hoặc +84916705392"
+              onkeydown="if(event.key==='Enter') document.getElementById('btnFindCall').click()" />
+          </div>
+          <div class="col-2">
+            <label for="findTargetSelect">Hệ thống MPT (tra cứu cuộc gọi)</label>
+            <select id="findTargetSelect">
+              <option value="all">-- Tất cả hệ thống --</option>
+            </select>
+          </div>
+          <div class="col flex-align-end">
+            <button id="btnFindCall" class="primary btn-full">🔍 Tra cứu tất cả</button>
+          </div>
+        </div>
+        <div id="nospamQueryStatus" class="muted" style="margin-top:6px; font-size:11px;"></div>
+      </fieldset>
+
+      <!-- Kết quả 2 cột song song -->
+      <div class="find-grid">
+
+        <fieldset style="margin:0;">
+          <legend>📞 Lịch sử cuộc gọi (MPT Portal)</legend>
+          <div id="findResults" style="min-height:200px; max-height:420px; overflow-y:auto; padding:10px; background:var(--bg-alt); border:2px solid var(--border); font-size:11px;">
+            <div class="muted">Kết quả cuộc gọi từ portal MPT sẽ hiển thị ở đây.</div>
+          </div>
+        </fieldset>
+
+        <fieldset style="margin:0;">
+          <legend>🚫 Kiểm tra Spam (nospam.vncert.vn)</legend>
+          <div id="nospamResult" style="min-height:200px; max-height:420px; overflow-y:auto; padding:10px; background:var(--bg-alt); border:2px solid var(--border); font-size:11px; white-space:pre-wrap;">
+            <div class="muted">Kết quả kiểm tra spam sẽ hiển thị ở đây.</div>
+          </div>
+        </fieldset>
+
+      </div>
+    </div>
+
+    <!-- ===== TAB: BOT MPT ===== -->
+    <div id="tab-bots" class="tab-content">
+      <fieldset>
+        <legend>Cấu hình Bot Telegram cho MPT Routing</legend>
+        <div class="small mb-sm">Mỗi bot có thể nhận lệnh /status /report. Thêm nhiều bot để gửi cảnh báo tới nhiều nhóm.</div>
+        <div class="hstack mb-sm">
+          <button id="btnAddBot">＋ Thêm Bot</button>
+          <button id="btnSaveBots" class="primary">💾 Lưu danh sách Bot</button>
+        </div>
+        <div id="botList"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Khởi động Bot MPT</legend>
+        <div class="hstack">
+          <button id="btnStartMptBot" class="primary">▶ Khởi động Bot MPT</button>
+          <button id="btnStopMptBot" class="danger">⏹ Dừng Bot</button>
+          <span id="mptBotStatus" class="bot-status stopped"><span class="dot"></span> Chưa chạy</span>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- ===== TAB: MEETING NOTE ===== -->
+    <div id="tab-meeting" class="tab-content">
+      <fieldset>
+        <legend>Bot Telegram — Meeting Note AI</legend>
+        <div class="row">
+          <div class="col-2">
+            <label for="meetingToken">Bot Token</label>
+            <div class="secret-wrap">
+              <input type="password" id="meetingToken" placeholder="1234567890:AAE..." />
+              <button type="button" class="btn-reveal" data-reveal="meetingToken" aria-label="Hiện/ẩn token">👁</button>
+            </div>
+          </div>
+          <div class="col-2">
+            <label for="meetingGeminiKey">Gemini API Key</label>
+            <div class="secret-wrap">
+              <input type="password" id="meetingGeminiKey" placeholder="AIza..." />
+              <button type="button" class="btn-reveal" data-reveal="meetingGeminiKey" aria-label="Hiện/ẩn key">👁</button>
+            </div>
+          </div>
+          <div class="col flex-align-end">
+            <div class="hstack-xs">
+              <button id="btnTestGemini" class="ghost">Test Gemini</button>
+              <span id="geminiTestStatus" class="test-status"></span>
+            </div>
+          </div>
+        </div>
+        <div class="hstack mt-sm">
+          <button id="btnSaveMeeting" class="primary">💾 Lưu</button>
+          <button id="btnStartMeetingBot">▶ Khởi động Bot</button>
+          <button id="btnStopMeetingBot" class="danger">⏹ Dừng Bot</button>
+          <span id="meetingBotStatus" class="bot-status stopped"><span class="dot"></span> Chưa chạy</span>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>System Prompt AI (tùy chỉnh cách tóm tắt)</legend>
+        <textarea id="meetingPrompt" style="min-height:130px;"></textarea>
+        <div class="hstack mt-sm">
+          <button id="btnSaveMeetingPrompt" class="primary">💾 Lưu Prompt</button>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Tuỳ chọn tóm tắt</legend>
+        <div class="row">
+          <div class="col">
+            <label for="meetingModel">Model</label>
+            <select id="meetingModel">
+              <option value="gemini-2.5-flash">Flash (nhanh)</option>
+              <option value="gemini-2.5-pro">Pro (chất lượng)</option>
+            </select>
+          </div>
+          <div class="col">
+            <label for="meetingStyle">Kiểu biên bản</label>
+            <select id="meetingStyle">
+              <option value="structured">Có cấu trúc</option>
+              <option value="short">Ngắn gọn</option>
+              <option value="detailed">Chi tiết</option>
+              <option value="action">Chỉ action items</option>
+            </select>
+          </div>
+          <div class="col">
+            <label for="meetingLang">Ngôn ngữ biên bản</label>
+            <select id="meetingLang">
+              <option value="vi">Tiếng Việt</option>
+              <option value="en">English</option>
+              <option value="ja">日本語</option>
+              <option value="ko">한국어</option>
+            </select>
+          </div>
+          <div class="col flex-align-end" style="padding-bottom:6px;">
+            <label class="toggle">
+              <input type="checkbox" id="meetingTranscript" />
+              <span class="slider"></span>
+              <span class="toggle-label">Kèm transcript</span>
+            </label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-2">
+            <label for="meetingAllowed">Allowlist Chat ID (cách nhau dấu phẩy — trống = ai cũng dùng được)</label>
+            <input type="text" id="meetingAllowed" placeholder="VD: 12345678, -100987654321" />
+          </div>
+          <div class="col flex-align-end">
+            <button id="btnSaveMeetingOpts" class="primary">💾 Lưu tuỳ chọn</button>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Tóm tắt file lớn (qua web — không giới hạn 20MB như Telegram)</legend>
+        <div class="hstack" style="flex-wrap:wrap;">
+          <input type="file" id="meetingUploadFile" accept="audio/*,video/*" class="control-sm" />
+          <button id="btnMeetingUpload" class="primary control-sm">▶ Tải lên & Tóm tắt</button>
+          <span id="meetingUploadStatus" class="muted small"></span>
+        </div>
+        <div id="meetingUploadResult" class="small" style="margin-top:8px; white-space:pre-wrap; max-height:300px; overflow-y:auto;"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Lịch sử tóm tắt gần đây</legend>
+        <div class="hstack mb-sm" style="flex-wrap:wrap;">
+          <input type="text" id="meetingSearch" placeholder="🔎 Tìm theo tên file..." class="control-sm" />
+          <button id="btnRefreshMeetingHistory" class="ghost">↻ Làm mới</button>
+        </div>
+        <div id="meetingHistory">
+          <div class="muted">Chưa có file nào.</div>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- ===== TAB: LOG ===== -->
+    <div id="tab-log" class="tab-content">
+      <div class="hstack mb-sm">
+        <button id="btnClearLog" class="ghost">🗑 Xóa log</button>
+        <label class="toggle">
+          <input type="checkbox" id="logAutoScroll" checked />
+          <span class="slider"></span>
+          <span class="toggle-label">Auto scroll</span>
+        </label>
+      </div>
+      <div id="log">→ Log hệ thống sẽ hiển thị ở đây.</div>
+    </div>
+
+  </div><!-- end app-body -->
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <div class="status-left">
+      <span class="dot dot-idle" id="footerDot"></span>
+      <span id="footerStatus">SuperBot — localhost:8765</span>
+    </div>
+    <div class="hstack">
+      <span id="lastScanTime" class="muted"></span>
+      <span class="version-label">MPT SuperBot v1.4</span>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast-container"></div>
+
+  <script src="/static/charts.js?v=3"></script>
+  <script src="/static/app.js?v=3"></script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+/* ================== SOLARIZED CYBER-BRUTALISM DESIGN SYSTEM ================== */
+/* Dùng chung cho popup và dashboard */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+/* ===== CSS CUSTOM PROPERTIES ===== */
+:root {
+  --bg: #fdf6e3;
+  --bg-alt: #eee8d5;
+  --text: #073642;
+  --text-muted: #586e75;
+  --text-faint: #6b7b7b;   /* đậm hơn base1 để .muted/.small đạt tương phản AA */
+  --border: #073642;
+  --white: #fff;           /* "surface" — ở dark map sang nền tối */
+  --magenta: #d33682;
+  --blue: #268bd2;
+  --cyan: #2aa198;
+  --green: #859900;
+  --orange: #cb4b16;
+  --red: #dc322f;
+  --yellow: #b58900;
+  --shadow: rgba(7, 54, 66, 0.2);
+}
+
+/* ===== DARK THEME (Solarized Dark) ===== */
+:root[data-theme="dark"] {
+  --bg: #002b36;
+  --bg-alt: #073642;
+  --text: #93a1a1;
+  --text-muted: #839496;
+  --text-faint: #657b83;
+  --border: #93a1a1;
+  --white: #073642;        /* surface tối thay cho nền trắng */
+  --shadow: rgba(0, 0, 0, 0.45);
+}
+
+/* ===== BASE ===== */
+body {
+  font-family: "Space Mono", ui-monospace, monospace;
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  box-sizing: border-box;
+}
+
+h1 {
+  font-size: 16px;
+  margin: 0;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--magenta);
+}
+
+/* ===== FORMS ===== */
+fieldset {
+  border: 2px solid var(--border); border-radius: 0; padding: 12px 14px 14px; margin-bottom: 16px;
+  background: var(--white); box-shadow: 4px 4px 0px var(--shadow);
+}
+legend {
+  padding: 0 6px; font-size: 12px; font-weight: 700; color: var(--orange);
+  text-transform: uppercase; letter-spacing: .05em; background: var(--bg);
+  border: 2px solid var(--border);
+}
+label {
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  display: inline-block; margin-bottom: 4px; text-transform: uppercase;
+}
+input[type="text"], input[type="password"], input[type="number"], select, textarea {
+  width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 0; border: 2px solid var(--border);
+  background: var(--bg-alt); color: var(--text); font-size: 12px; font-family: "Space Mono", monospace; transition: all .2s;
+}
+textarea { resize: vertical; min-height: 60px; }
+input:focus, select:focus, textarea:focus {
+  outline: none; background: var(--white); border-color: var(--magenta);
+  box-shadow: 2px 2px 0px var(--magenta);
+}
+
+/* ===== LAYOUT HELPERS ===== */
+.row { display: flex; gap: 12px; margin-bottom: 10px; }
+.col { flex: 1; } .col-2 { flex: 2; } .col-3 { flex: 3; }
+.small { font-size: 10px; color: var(--text-faint); margin-top: 4px; }
+.muted { font-size: 11px; color: var(--text-faint); padding: 12px 0; }
+.flex { display: flex; align-items: center; }
+
+/* ===== BUTTONS ===== */
+button {
+  border-radius: 0; border: 2px solid var(--border); background: var(--bg-alt); color: var(--text);
+  font-size: 12px; font-weight: 700; padding: 6px 16px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; transition: all .1s;
+  text-transform: uppercase; box-shadow: 2px 2px 0px var(--border);
+  font-family: "Space Mono", monospace;
+}
+button:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px var(--border); }
+button:hover { background: var(--bg); }
+button:focus-visible { outline: none; border-color: var(--magenta); box-shadow: 3px 3px 0px var(--magenta); }
+button.primary { background: var(--cyan); color: var(--bg); }
+button.primary:hover { background: var(--blue); }
+button.danger { background: var(--red); color: var(--bg); }
+button.danger:hover { background: var(--orange); }
+button.ghost { box-shadow: none; border-color: transparent; background: transparent; }
+button.ghost:hover { background: var(--bg-alt); border-color: var(--border); }
+button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; }
+
+/* ===== TOGGLE SWITCH ===== */
+.toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.toggle input { display: none; }
+.toggle .slider {
+  width: 36px; height: 18px; background: var(--bg-alt); border: 2px solid var(--border);
+  position: relative; transition: background .2s; flex-shrink: 0;
+}
+.toggle .slider::after {
+  content: ''; position: absolute; top: 1px; left: 1px;
+  width: 12px; height: 12px; background: var(--border); transition: transform .2s;
+}
+.toggle input:checked + .slider { background: var(--green); }
+.toggle input:checked + .slider::after { transform: translateX(18px); background: var(--bg); }
+.toggle-label { font-size: 12px; font-weight: 700; color: var(--text); user-select: none; text-transform: uppercase; }
+
+/* ===== STATUS PILLS & DOTS ===== */
+.status-pill {
+  display: inline-flex; align-items: center; padding: 2px 6px; font-size: 10px; font-weight: 700;
+  gap: 6px; border: 2px solid var(--border); background: var(--white); text-transform: uppercase;
+}
+.dot { width: 8px; height: 8px; border: 1px solid var(--border); }
+.status-running { background: var(--cyan); color: var(--bg); }
+.dot-running    { background: var(--green); }
+.status-disabled { background: var(--bg-alt); color: var(--text-muted); }
+.dot-disabled    { background: var(--text-faint); }
+.status-paused { background: var(--yellow); color: var(--bg); }
+.dot-paused    { background: var(--bg); }
+.status-idle { background: var(--blue); color: var(--bg); }
+.dot-idle    { background: var(--white); }
+
+/* ===== TABLES ===== */
+table { border-collapse: collapse; width: 100%; border: 2px solid var(--border); }
+th, td { padding: 8px 10px; border-bottom: 2px solid var(--border); border-right: 2px solid var(--border); }
+th {
+  text-align: left; color: var(--bg); background: var(--border); position: sticky; top: 0; z-index: 1;
+  font-weight: 700; text-transform: uppercase;
+}
+
+/* ===== CLUSTER HIGHLIGHTING ===== */
+.cluster-bad { background: rgba(220, 50, 47, 0.15); }
+.cluster-good { background: var(--white); }
+.cluster-bad td:first-child::before { content: "► "; font-size: 10px; color: var(--red); }
+.cell-bad { color: var(--red); font-weight: 700; background: rgba(220, 50, 47, 0.1); }
+
+/* ===== CHIPS ===== */
+.chip {
+  font-size: 9px; padding: 2px 6px; background: var(--blue); border: 2px solid var(--border);
+  margin-left: 6px; color: var(--bg); font-weight: 700;
+}
+
+/* ===== PILL SMALL ===== */
+.pill-small {
+  display: inline-flex; align-items: center; padding: 2px 6px; font-size: 10px; font-weight: 700;
+  gap: 6px; background: var(--white); border: 2px solid var(--border); text-transform: uppercase;
+}
+
+/* ===== TOAST: định nghĩa trong app.css (tránh trùng lặp) ===== */
+
+/* ===== SPINNER ===== */
+.spinner {
+  width: 14px; height: 14px; border: 2px solid var(--blue); border-top-color: transparent;
+  border-radius: 50%; animation: spin .6s linear infinite; flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-alt); }
+::-webkit-scrollbar-thumb { background: var(--border); }
+
+/* ===== VERSION LABEL ===== */
+.version-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--blue);
+  border: 2px solid var(--border);
+  padding: 1px 6px;
+  background: var(--bg);
+}
