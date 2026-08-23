@@ -9,7 +9,11 @@ from typing import Optional
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from modules.mpt_routing import get_session, build_bad_alert, build_drop_alert
+from modules.mpt_http import get_session
+from modules.alert_helpers import (
+    build_bad_alert, build_bad_alert_batch, build_drop_alert,
+    build_drop_alert_batch, build_recovery_alert,
+)
 from state import (
     log, save_snapshot, get_snapshot, get_persist, save_persist,
     increment_daily_stat, get_daily_stats, set_billing_cache,
@@ -137,9 +141,11 @@ async def check_target(target: dict, global_cfg: dict, mpt_bots: list):
     last_status = p.get("lastStatus", {})
     cluster_alert_times = p.get("clusterAlertTimes", {})
     cluster_drop_times  = p.get("clusterDropAlertTimes", {})
+    cluster_bad_since   = p.get("clusterBadSince", {})  # cluster → ts_ms bắt đầu cạn
 
     changed_bad = []
     drop_alerts = []
+    recovered   = []  # cluster vừa phục hồi (bad → good)
 
     for r in rows:
         cluster = r["cluster"]
@@ -161,9 +167,21 @@ async def check_target(target: dict, global_cfg: dict, mpt_bots: list):
         is_bad = r["viettel"] <= vt_limit or r["mobi"] <= mb_limit or r["vina"] <= vn_limit
         prev = last_status.get(cluster, "good")
         if not is_bad:
+            if prev == "bad":
+                # Phục hồi: ghi nhận thời điểm bắt đầu cạn để gửi tin ✓
+                recovered.append({
+                    "cluster": cluster,
+                    "viettel": r["viettel"],
+                    "mobi": r["mobi"],
+                    "vina": r["vina"],
+                    "since_ms": cluster_bad_since.get(cluster, 0),
+                })
+                cluster_bad_since.pop(cluster, None)
             last_status[cluster] = "good"
             continue
 
+        if prev != "bad":
+            cluster_bad_since[cluster] = now  # bắt đầu cạn
         last_status[cluster] = "bad"
         if only_on_change and prev == "bad":
             continue
@@ -172,37 +190,51 @@ async def check_target(target: dict, global_cfg: dict, mpt_bots: list):
     await save_persist(tid, {
         "lastStatus": last_status,
         "clusterAlertTimes": cluster_alert_times,
-        "clusterDropAlertTimes": cluster_drop_times
+        "clusterDropAlertTimes": cluster_drop_times,
+        "clusterBadSince": cluster_bad_since,
     })
 
     active_bots = [b for b in mpt_bots if b.get("enabled")]
 
-    # Gửi DROP alerts (dedup 6h)
+    # Gửi DROP alerts (dedup 6h) — gộp 1 tin nếu nhiều cluster
+    pending_drops = []
     for drop in drop_alerts:
         last_drop = cluster_drop_times.get(drop["row"]["cluster"], 0)
         if now - last_drop < DEDUP_WINDOW_MS:
             continue
         cluster_drop_times[drop["row"]["cluster"]] = now
-        text = build_drop_alert(alert_name, drop["row"], drop["details"], drop_threshold)
+        pending_drops.append(drop)
+    if pending_drops:
+        text = build_drop_alert_batch(alert_name, pending_drops, drop_threshold)
         for bot in active_bots:
             await send_telegram(bot, text)
         await increment_daily_stat(tid, "drop")
 
-    # Gửi BAD alerts (dedup 6h)
+    # Gửi BAD alerts (dedup 6h) — gộp 1 tin nếu nhiều cluster
+    pending_bads = []
     for r in changed_bad:
         last_bad = cluster_alert_times.get(r["cluster"], 0)
         if now - last_bad < DEDUP_WINDOW_MS:
             continue
         cluster_alert_times[r["cluster"]] = now
-        text = build_bad_alert(alert_name, r)
+        pending_bads.append(r)
+    if pending_bads:
+        text = build_bad_alert_batch(alert_name, pending_bads, cluster_bad_since)
         for bot in active_bots:
             await send_telegram(bot, text)
         await increment_daily_stat(tid, "bad")
 
+    # Gửi RECOVERY alerts (không dedup — sự kiện hiếm, gộp 1 tin)
+    if recovered:
+        text = build_recovery_alert(alert_name, recovered)
+        for bot in active_bots:
+            await send_telegram(bot, text)
+
     # Lưu lại alert times đã update
     await save_persist(tid, {
         "clusterAlertTimes": cluster_alert_times,
-        "clusterDropAlertTimes": cluster_drop_times
+        "clusterDropAlertTimes": cluster_drop_times,
+        "clusterBadSince": cluster_bad_since,
     })
 
 

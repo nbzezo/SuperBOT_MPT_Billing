@@ -291,7 +291,7 @@ async def api_mpt_billing(target_id: str, day: str):
     if not target.get("enabled"):
         return {"error": "Target không được bật"}
     log(f"Fetch billing {target_id} ngày {day}", "BILLING")
-    from modules.mpt_routing import get_session
+    from modules.mpt_http import get_session
     session = get_session(target)
     result = await session.fetch_billing(day)
     return result
@@ -313,7 +313,7 @@ async def api_mpt_find(payload: PhoneQuery):
         log("Lỗi: Không có target nào hợp lệ để tra cứu", "FIND_ERR")
         return {"data": []}
 
-    from modules.mpt_routing import get_session
+    from modules.mpt_http import get_session
     
     async def _search(t):
         sess = get_session(t)

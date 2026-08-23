@@ -1,20 +1,27 @@
 """
 modules/nospam.py — Logic tra cứu số spam qua nospam.vncert.vn
-Tách từ Nospam/bot_nospam.py (không có Telegram bot ở đây)
+Dùng HTTP thuần (httpx) — thay thế Playwright/Chrome.
+
+API (giải mã từ /js/searchDNC.js):
+  POST /search-dnc  JSON {"phone": "0916..."}
+  → {"code": "00", "data": "ACTIVE"|"UNACTIVE"}
 """
 import re
-import asyncio
-import os
-import sys
 from typing import Optional
-from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from utils import find_chrome  # noqa: E402
+import httpx
 
 NOSPAM_URL = "https://nospam.vncert.vn/"
+SEARCH_URL = NOSPAM_URL + "search-dnc"
 
-CHROME_PATH = find_chrome()
+UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+
+MSG_ACTIVE = ("Số điện thoại của quý khách đã nằm trong danh sách "
+              "không quảng cáo DNC. Để hủy đăng ký soạn: HUY DNC gửi 5656. Trân trọng!")
+MSG_UNACTIVE = ("Số điện thoại của quý khách không nằm trong danh sách "
+                "không quảng cáo DNC. Để đăng ký soạn: DK DNC gửi 5656. Trân trọng!")
+
 
 def normalize_vn_phone(raw: str) -> Optional[str]:
     """
@@ -48,7 +55,7 @@ def normalize_vn_phone(raw: str) -> Optional[str]:
 
 async def query_nospam(raw_phone: str) -> dict:
     """
-    Tra cứu số điện thoại trên nospam.vncert.vn.
+    Tra cứu số điện thoại trên nospam.vncert.vn (HTTP thuần, không browser).
     Trả về: {"phone": "0916...", "result": "nội dung", "error": None}
     """
     phone = normalize_vn_phone(raw_phone)
@@ -59,43 +66,35 @@ async def query_nospam(raw_phone: str) -> dict:
             "error": f"Số không hợp lệ: '{raw_phone}'. Vui lòng nhập định dạng VN (10 số, bắt đầu bằng 0 hoặc 84)"
         }
 
-    async with async_playwright() as p:
-        launch_opts = {"headless": True}
-        if CHROME_PATH:
-            launch_opts["executable_path"] = CHROME_PATH
-        browser = await p.chromium.launch(**launch_opts)
-        context = await browser.new_context()
-        page = await context.new_page()
+    try:
+        async with httpx.AsyncClient(
+            follow_redirects=True, timeout=30, headers={"User-Agent": UA}
+        ) as client:
+            # GET trang chủ để nhận cookie cần thiết (nếu có)
+            await client.get(NOSPAM_URL)
+            r = await client.post(
+                SEARCH_URL,
+                json={"phone": phone},
+                headers={"Content-Type": "application/json"},
+            )
+            r.raise_for_status()
+            data = r.json()
 
-        try:
-            await page.goto(NOSPAM_URL, wait_until="domcontentloaded", timeout=30000)
-            await page.fill("#searchPhoneNumber", phone)
-            await page.click("#btnSearchPhoneNumber")
+        code = data.get("code")
+        payload = data.get("data")
 
-            try:
-                await page.wait_for_selector("#searchContent", timeout=15000)
-            except PlaywrightTimeoutError:
-                pass
+        if code == "00":
+            result = MSG_ACTIVE if payload == "ACTIVE" else MSG_UNACTIVE
+            return {"phone": phone, "result": result, "error": None}
 
-            # Chờ text có nội dung (tối đa 15s)
-            for _ in range(30):
-                text = (await page.inner_text("#searchContent")).strip()
-                if text:
-                    try:
-                        await page.click("#confirmSearchBtn", timeout=1000)
-                    except Exception:
-                        pass  # cố ý: nút xác nhận có thể không xuất hiện
-                    return {"phone": phone, "result": text, "error": None}
-                await asyncio.sleep(0.5)
+        # code khác 00 → server trả thông báo trong data
+        return {
+            "phone": phone,
+            "result": None,
+            "error": payload or f"Tra cứu thất bại (code={code})",
+        }
 
-            return {
-                "phone": phone,
-                "result": None,
-                "error": "Timeout — không lấy được kết quả. Vui lòng thử lại."
-            }
-
-        except Exception as e:
-            return {"phone": phone, "result": None, "error": str(e)}
-        finally:
-            await context.close()
-            await browser.close()
+    except httpx.HTTPStatusError as e:
+        return {"phone": phone, "result": None, "error": f"HTTP {e.response.status_code}"}
+    except Exception as e:
+        return {"phone": phone, "result": None, "error": str(e)}

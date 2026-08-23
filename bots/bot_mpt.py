@@ -9,17 +9,17 @@ import logging
 import os
 import sys
 import time
-
+import traceback
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from datetime import datetime
 import httpx
-from telegram import Update
+from telegram import Update, ReplyKeyboardMarkup
 from telegram.helpers import escape_markdown
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
 from state import (
-    get_all_snapshots, get_snapshot, get_daily_stats_range, get_billing_cache,
+    get_all_snapshots, get_snapshot, get_daily_stats, get_daily_stats_range, get_billing_cache,
     set_billing_cache, get_logs,
     get_ai_history, clear_ai_history, save_ai_history,
     get_bot_status,
@@ -243,6 +243,29 @@ async def cmd_billing(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await asyncio.sleep(0.5)
 
 
+def _main_keyboard() -> ReplyKeyboardMarkup:
+    """Bàn phím nút bấm nhanh cho các lệnh chính."""
+    return ReplyKeyboardMarkup(
+        [
+            ["/status", "/report"],
+            ["/billing", "/find"],
+            ["/pause", "/resume"],
+            ["/help"],
+        ],
+        resize_keyboard=True,
+    )
+
+
+async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Chào mừng + hiện bàn phím nút bấm."""
+    await update.message.reply_text(
+        "◇ *MPT Routing Bot*\n"
+        "Dùng nút bên dưới hoặc gõ lệnh /help để xem danh sách lệnh.",
+        parse_mode="Markdown",
+        reply_markup=_main_keyboard(),
+    )
+
+
 async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = (
         "◇ *MPT Routing Bot — Lệnh hỗ trợ*\n\n"
@@ -256,7 +279,7 @@ async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "/help — Danh sách lệnh\n\n"
         "🤖 *AI Agent*: Gửi bất kỳ câu hỏi nào (không cần lệnh /) — AI sẽ trả lời dựa trên dữ liệu hệ thống."
     )
-    await update.message.reply_text(msg, parse_mode="Markdown")
+    await update.message.reply_text(msg, parse_mode="Markdown", reply_markup=_main_keyboard())
 
 
 # ===== AI AGENT =====
@@ -860,6 +883,19 @@ async def cmd_ai_clear(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("✅ Đã xóa lịch sử hội thoại AI. Cuộc trò chuyện mới bắt đầu.")
 
 
+async def global_error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Bắt lỗi toàn cục của bot và báo lại cho người dùng."""
+    logging.error("Exception while handling an update:", exc_info=context.error)
+    traceback.print_exc()
+
+    if isinstance(update, Update) and update.effective_message:
+        try:
+            await update.effective_message.reply_text(
+                "⚠️ Hệ thống đang gặp lỗi khi xử lý lệnh. Vui lòng thử lại sau hoặc báo Admin kiểm tra log."
+            )
+        except Exception:
+            pass
+
 
 def main() -> None:
     config = load_config()
@@ -886,8 +922,13 @@ def main() -> None:
     app.add_handler(CommandHandler("billing", cmd_billing))
     app.add_handler(CommandHandler("pause", cmd_pause))
     app.add_handler(CommandHandler("resume", cmd_resume))
+    app.add_handler(CommandHandler("start", cmd_start))
     app.add_handler(CommandHandler("help", cmd_help))
     app.add_handler(CommandHandler("ai_clear", cmd_ai_clear))
+    
+    # Bắt lỗi toàn cục
+    app.add_error_handler(global_error_handler)
+    
     # MessageHandler phải thêm sau cùng — bắt text không phải lệnh /
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_ai_message))
     ai_enabled = config.get("ai", {}).get("enabled", False)

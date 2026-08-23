@@ -210,7 +210,7 @@ class MPTSession:
                 results = []
                 for acc in accounts:
                     dur = await self._fetch_one_account(billing_url, acc["id"], day)
-                    if dur and dur > 0:
+                    if dur is not None and dur >= 0:
                         results.append({"name": acc["name"], "duration": dur})
                     await asyncio.sleep(0.3)
 

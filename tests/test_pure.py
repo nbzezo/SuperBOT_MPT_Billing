@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from utils import pad_right, pad_left
 from modules.nospam import normalize_vn_phone
-from modules.mpt_routing import build_bad_alert, build_drop_alert, _md_escape, _code_safe
+from modules.alert_helpers import build_bad_alert, build_drop_alert, _md_escape, _code_safe
 
 
 # ===== normalize_vn_phone =====

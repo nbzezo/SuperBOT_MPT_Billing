@@ -971,11 +971,11 @@ async function bmLoadGroups() {
   }
 }
 
-async function bmLoadClusters() {
+async function bmLoadClusters(force = true) {
   const tid = document.getElementById('bmTarget').value;
   const list = document.getElementById('bmClusterList');
   list.innerHTML = '<span class="muted">Đang tải...</span>';
-  if (!_bmClusters[tid]) {
+  if (force || !_bmClusters[tid]) {
     const res = await fetch(`/api/billing/clusters/available?target_id=${tid}`);
     const data = await res.json();
     _bmClusters = { ..._bmClusters, ...data.clusters };
