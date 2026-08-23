@@ -1,0 +1,19 @@
+# Lưu ý: dự án hiện chưa phải git repo — file này chỉ có tác dụng khi `git init`.
+
+# Môi trường ảo
+.venv/
+venv/
+
+# Bí mật & dữ liệu runtime
+config.json
+*.db
+*.db-wal
+*.db-shm
+temp/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+logs/*.log
+superbot.log
